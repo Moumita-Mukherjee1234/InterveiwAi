@@ -1,53 +1,36 @@
 import express from "express";
-
-import InterviewReport from "../models/InterviewReport.model.js";
 import upload from "../middleware/upload.middleware.js";
-import authMiddleware from "../middleware/auth.middleware.js";
+import protect from "../middleware/auth.middleware.js";
 
-import { extractTextFromPDF } from "../services/pdf.service.js";
-import { generateInterviewReport } from "../services/ai.service.js";
+import {
+  generateInterview,
+  getAllReports,
+  getInterviewById,
+} from "../controllers/interview.controller.js";
 
 const router = express.Router();
 
-// POST /api/interview
+/**
+ * GET /api/interview
+ * History table on Home page
+ */
+router.get("/", protect, getAllReports);
+
+/**
+ * GET /api/interview/:id
+ * View full report when clicking "View"
+ */
+router.get("/:id", protect, getInterviewById);
+
+/**
+ * POST /api/interview
+ * Upload resume + generate report
+ */
 router.post(
   "/",
-  authMiddleware,
+  protect,
   upload.single("resume"),
-  async (req, res) => {
-    try {
-      const { jobDescription, selfDescription } = req.body;
-
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-
-      // ✅ Use buffer directly (NO fs, NO path)
-      const resumeText = await extractTextFromPDF(req.file.buffer);
-
-      // ✅ Generate AI report
-      const aiReport = await generateInterviewReport({
-        resumeText,
-        jobDescription,
-        selfDescription,
-      });
-
-      // ✅ Save to DB
-      const savedReport = await InterviewReport.create({
-        userId: req.user._id,
-        ...aiReport,
-      });
-
-      res.status(201).json({
-        message: "Interview report generated & saved",
-        report: savedReport,
-      });
-
-    } catch (error) {
-      console.error("INTERVIEW ERROR:", error);
-      res.status(500).json({ message: error.message });
-    }
-  }
+  generateInterview
 );
 
 export default router;

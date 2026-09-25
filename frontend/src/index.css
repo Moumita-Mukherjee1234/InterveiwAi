@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --indigo-deep:#282072;
+  --teal:#03B3C5;
+  --coral-red:#F32A46;
+  --mustard:#F1B62C;
+}
+
+body{
+  background:#f7f8ff;
+}

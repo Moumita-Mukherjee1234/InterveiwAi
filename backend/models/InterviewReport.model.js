@@ -1,36 +1,26 @@
 import mongoose from "mongoose";
 
-const interviewReportSchema = new mongoose.Schema(
+const InterviewReportSchema = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    technicalQuestions: [{ type: String }],
+    // Metadata
+    jobRole: String,
+    jobDescription: String,
+    selfDescription: String,
 
-    behavioralQuestions: [{ type: String }],
-
-    skillGaps: [{ type: String }],
-
-    preparationPlan: [{ type: String }],
-
-    matchScore: {
-      type: Number,
-      required: true,
-      min: 0,
-      max: 100,
-    },
+    // AI Output
+    technicalQuestions: [String],
+    behavioralQuestions: [String],
+    skillGaps: [String],
+    roadmap: [String],          // ✅ renamed from preparationPlan
+    matchScore: Number,
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const InterviewReport = mongoose.model(
-  "InterviewReport",
-  interviewReportSchema
-);
-
-export default InterviewReport;
+export default mongoose.model("InterviewReport", InterviewReportSchema);
