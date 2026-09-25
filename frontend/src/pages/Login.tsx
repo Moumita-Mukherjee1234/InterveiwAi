@@ -8,27 +8,34 @@ import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const login = useAuthStore((s) => s.login);
+  const loading = useAuthStore((s) => s.loading);
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    const success = await login(email, password);
+    if (!email.trim() || !password) {
+      alert("Please enter email and password");
+      return;
+    }
 
-    // ✅ navigate to home after login
+    const success = await login(email.trim(), password);
+
     if (success) {
       navigate("/home");
-    }
-    else {
-      alert("Invalid credentials");
+    } else {
+      alert(
+        "Login failed. Please check your email, password, or browser console."
+      );
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 via-white to-indigo-50 px-6">
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-10 items-center">
-        
+
         {/* Left Section */}
         <div className="space-y-6">
           <h1 className="text-4xl font-extrabold leading-tight text-[#282072]">
@@ -47,25 +54,33 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Right Section (Login Card) */}
+        {/* Right Section */}
         <Card className="p-8 shadow-2xl rounded-2xl">
           <h2 className="text-2xl font-bold text-[#282072] mb-6">
             Welcome Back
           </h2>
 
           <div className="space-y-4">
+
+            {/* Email */}
             <div>
-              <Label>Email</Label>
+              <Label htmlFor="email">Email</Label>
+
               <Input
+                id="email"
+                type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
+            {/* Password */}
             <div>
-              <Label>Password</Label>
+              <Label htmlFor="password">Password</Label>
+
               <Input
+                id="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
@@ -73,13 +88,17 @@ export default function Login() {
               />
             </div>
 
+            {/* Login Button */}
             <Button
+              type="button"
+              disabled={loading}
               className="w-full bg-[#282072] hover:bg-[#1f1a5c]"
               onClick={handleLogin}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
 
+            {/* Register */}
             <p className="text-sm text-center text-gray-500">
               Don’t have an account?{" "}
               <span
@@ -89,6 +108,7 @@ export default function Login() {
                 Register
               </span>
             </p>
+
           </div>
         </Card>
       </div>

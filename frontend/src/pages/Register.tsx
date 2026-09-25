@@ -29,19 +29,30 @@ export default function Register() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const validate = () => {
-    if (!form.fullName || !form.email || !form.password) {
+    if (
+      !form.fullName.trim() ||
+      !form.email.trim() ||
+      !form.password
+    ) {
       return "All fields are required";
     }
+
     if (form.password.length < 6) {
       return "Password must be at least 6 characters";
     }
+
     if (form.password !== form.confirmPassword) {
       return "Passwords do not match";
     }
+
     return "";
   };
 
@@ -49,6 +60,7 @@ export default function Register() {
     e.preventDefault();
 
     const validationError = validate();
+
     if (validationError) {
       setError(validationError);
       return;
@@ -56,14 +68,25 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await register({
-        name: form.fullName,
-        email: form.email,
+      setError("");
+
+      const success = await register({
+        username: form.fullName.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password,
       });
-      navigate("/home");
+
+      if (success) {
+        // Registration only creates the account.
+        // User must login to create an authentication session.
+        navigate("/login");
+      } else {
+        setError("Registration failed");
+      }
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Registration failed");
+      setError(
+        err?.response?.data?.message || "Registration failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -72,7 +95,7 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 via-white to-indigo-50 px-6">
       <div className="w-full max-w-6xl grid md:grid-cols-2 gap-12 items-center">
-        
+
         {/* Left Hero Section */}
         <div className="hidden md:flex flex-col space-y-6">
           <h1 className="text-4xl font-extrabold leading-tight text-[#282072]">
@@ -97,19 +120,30 @@ export default function Register() {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Full Name */}
             <div>
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="fullName">
+                Full Name
+              </Label>
+
               <Input
                 id="fullName"
                 name="fullName"
+                type="text"
                 placeholder="John Doe"
                 value={form.fullName}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
+            {/* Email */}
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">
+                Email
+              </Label>
+
               <Input
                 id="email"
                 name="email"
@@ -117,37 +151,52 @@ export default function Register() {
                 placeholder="you@example.com"
                 value={form.email}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
+            {/* Password */}
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">
+                Password
+              </Label>
+
               <Input
                 id="password"
-                type="password"
                 name="password"
+                type="password"
                 placeholder="Create password"
                 value={form.password}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
+            {/* Confirm Password */}
             <div>
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">
+                Confirm Password
+              </Label>
+
               <Input
                 id="confirmPassword"
-                type="password"
                 name="confirmPassword"
+                type="password"
                 placeholder="Confirm password"
                 value={form.confirmPassword}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
+            {/* Error */}
             {error && (
-              <p className="text-sm text-red-500 font-medium">{error}</p>
+              <p className="text-sm text-red-500 font-medium">
+                {error}
+              </p>
             )}
 
+            {/* Register Button */}
             <Button
               type="submit"
               disabled={loading}
@@ -157,9 +206,13 @@ export default function Register() {
             </Button>
           </form>
 
+          {/* Login Link */}
           <p className="text-sm text-center mt-6 text-gray-600">
             Already have an account?{" "}
-            <Link to="/login" className="text-[#03B3C5] font-medium">
+            <Link
+              to="/login"
+              className="text-[#03B3C5] font-medium"
+            >
               Login
             </Link>
           </p>

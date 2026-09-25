@@ -3,18 +3,19 @@ import { api } from "../lib/api";
 
 type User = {
   _id: string;
-  name: string;
+  username: string;
   email: string;
 };
 
 interface AuthState {
   user: User | null;
   loading: boolean;
+  initialized: boolean;
 
   getMe: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   register: (data: {
-    name: string;
+    username: string;
     email: string;
     password: string;
   }) => Promise<boolean>;
@@ -24,56 +25,117 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: false,
+  initialized: false,
 
-  // Restore session
+  // Restore existing login session
   getMe: async () => {
     try {
-      const res = await api.get("/api/auth/get-me");
-      set({ user: res.data.user });
-    } catch {
-      set({ user: null });
+      const response = await api.get("/api/auth/get-me");
+
+      console.log("GET ME RESPONSE:", response.data);
+
+      set({
+        user: response.data.user,
+        initialized: true,
+      });
+    } catch (error: any) {
+      console.log("No active session");
+
+      console.error("GET ME ERROR:", error?.response?.data);
+
+      set({
+        user: null,
+        initialized: true,
+      });
     }
   },
 
+  // Login
   login: async (email: string, password: string) => {
     try {
       set({ loading: true });
 
-      await api.post("/api/auth/login", { email, password });
+      console.log("LOGIN REQUEST:", {
+        email: email.trim(),
+        passwordLength: password.length,
+      });
 
-      const res = await api.get("/api/auth/get-me");
+      const response = await api.post("/api/auth/login", {
+        email: email.trim(),
+        password,
+      });
 
-      set({ user: res.data.user, loading: false });
+      console.log("LOGIN RESPONSE:", response.data);
+
+      set({
+        user: response.data.user,
+        loading: false,
+        initialized: true,
+      });
+
       return true;
-    } catch (error) {
-      console.error("Login failed:", error);
-      set({ loading: false });
+    } catch (error: any) {
+      console.error("LOGIN ERROR:", error);
+      console.error("STATUS:", error?.response?.status);
+      console.error("RESPONSE:", error?.response?.data);
+
+      set({
+        user: null,
+        loading: false,
+        initialized: true,
+      });
+
       return false;
     }
   },
 
+  // Register
   register: async (data) => {
     try {
       set({ loading: true });
 
-      await api.post("/api/auth/register", data);
+      console.log("REGISTER REQUEST:", {
+        username: data.username,
+        email: data.email,
+      });
 
-      const res = await api.get("/api/auth/get-me");
+      const response = await api.post("/api/auth/register", data);
 
-      set({ user: res.data.user, loading: false });
+      console.log("REGISTER RESPONSE:", response.data);
+
+      // Registration creates the account but does not log the user in.
+      set({
+        loading: false,
+        initialized: true,
+      });
+
       return true;
-    } catch (error) {
-      console.error("Register failed:", error);
-      set({ loading: false });
+    } catch (error: any) {
+      console.error("REGISTER ERROR:", error);
+      console.error("STATUS:", error?.response?.status);
+      console.error("RESPONSE:", error?.response?.data);
+
+      set({
+        loading: false,
+        user: null,
+        initialized: true,
+      });
+
       return false;
     }
   },
 
+  // Logout
   logout: async () => {
     try {
       await api.post("/api/auth/logout");
+    } catch (error: any) {
+      console.error("LOGOUT ERROR:", error);
     } finally {
-      set({ user: null });
+      set({
+        user: null,
+        initialized: true,
+      });
     }
   },
 }));

@@ -3,19 +3,27 @@ import { api } from "../lib/api";
 
 /* ---------------- TYPES ---------------- */
 
-export interface InterviewReport {
+export interface ReportData {
   _id: string;
+  user: string;
   jobRole: string;
-  matchScore: number;
-  createdAt: string;
+  jobDescription: string;
+  selfDescription: string;
 
-  // full AI report fields (keep as any if not strictly typed yet)
-  report: any;
+  technicalQuestions: string[];
+  behavioralQuestions: string[];
+  skillGaps: string[];
+  roadmap: string[];
+
+  matchScore: number;
+
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface InterviewState {
-  reports: InterviewReport[];
-  currentReport: InterviewReport | null;
+  reports: ReportData[];
+  currentReport: ReportData | null;
   loading: boolean;
 
   fetchReports: () => Promise<void>;
@@ -30,40 +38,61 @@ export const useInterviewStore = create<InterviewState>((set) => ({
   currentReport: null,
   loading: false,
 
-  /* ✅ Fetch all reports for History table */
+  /* Fetch all reports */
   fetchReports: async () => {
     try {
       set({ loading: true });
 
       const res = await api.get("/api/interview");
+
       set({
-        reports: res.data.reports,
+        reports: res.data.reports || [],
         loading: false,
       });
-    } catch (err) {
-      console.error("Failed to fetch reports", err);
-      set({ loading: false });
+    } catch (error: any) {
+      console.error("Failed to fetch reports:", error);
+      console.error("Status:", error?.response?.status);
+      console.error("Response:", error?.response?.data);
+
+      set({
+        reports: [],
+        loading: false,
+      });
     }
   },
 
-  /* ✅ Fetch single report when opening /interview/:id */
+  /* Fetch one report */
   fetchReportById: async (id: string) => {
     try {
-      set({ loading: true });
+      set({
+        loading: true,
+        currentReport: null,
+      });
 
       const res = await api.get(`/api/interview/${id}`);
+
+      console.log("REPORT RESPONSE:", res.data);
+
       set({
         currentReport: res.data.report,
         loading: false,
       });
-    } catch (err) {
-      console.error("Failed to fetch report", err);
-      set({ loading: false });
+    } catch (error: any) {
+      console.error("Failed to fetch report:", error);
+      console.error("Status:", error?.response?.status);
+      console.error("Response:", error?.response?.data);
+
+      set({
+        currentReport: null,
+        loading: false,
+      });
     }
   },
 
-  /* ✅ Clear when leaving page */
+  /* Clear current report */
   clearCurrentReport: () => {
-    set({ currentReport: null });
+    set({
+      currentReport: null,
+    });
   },
 }));

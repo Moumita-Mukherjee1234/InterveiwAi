@@ -13,108 +13,189 @@ export default function Interview() {
     loading,
   } = useInterviewStore();
 
-  // ✅ Fetch report from backend using ID in URL
-  useEffect(() => {
-    if (id) fetchReportById(id);
+  /* ---------------- FETCH REPORT ---------------- */
 
-    // clear when leaving page
-    return () => clearCurrentReport();
+  useEffect(() => {
+    if (id) {
+      fetchReportById(id);
+    }
+
+    return () => {
+      clearCurrentReport();
+    };
   }, [id, fetchReportById, clearCurrentReport]);
+
+  /* ---------------- LOADING ---------------- */
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg">
-        Loading report...
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <p className="text-lg text-gray-500">
+          Loading interview report...
+        </p>
       </div>
     );
   }
+
+  /* ---------------- NO REPORT ---------------- */
 
   if (!currentReport) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500 text-lg">
-        No report found.
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <p className="text-lg text-gray-500">
+          No report found.
+        </p>
       </div>
     );
   }
 
-  const report = currentReport.report;
+  /* ---------------- REPORT ---------------- */
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-10 space-y-10">
-      {/* 🔷 Match Score */}
+
+      {/* ================= MATCH SCORE ================= */}
+
       <Card className="p-8 flex items-center justify-between shadow-md rounded-2xl">
         <div>
-          <h2 className="text-2xl font-bold text-[#282072]">Match Score</h2>
-          <p className="text-gray-500">
+          <h2 className="text-2xl font-bold text-[#282072]">
+            Match Score
+          </h2>
+
+          <p className="text-gray-500 mt-1">
             How well your profile matches the job role
           </p>
+
+          <p className="text-sm text-gray-400 mt-2">
+            {currentReport.jobRole}
+          </p>
         </div>
+
         <div className="text-6xl font-extrabold text-[#F1B62C]">
           {currentReport.matchScore}%
         </div>
       </Card>
 
-      {/* 🔷 Technical Questions */}
+      {/* ================= TECHNICAL QUESTIONS ================= */}
+
       <Card className="p-8 shadow-md rounded-2xl">
         <h3 className="text-xl font-semibold text-[#282072] mb-6">
           Technical Questions
         </h3>
-        <ul className="space-y-3">
-          {report.technicalQuestions?.map((q: string, i: number) => (
-            <li key={i} className="p-4 bg-white border rounded-lg">
-              {q}
-            </li>
-          ))}
-        </ul>
+
+        {currentReport.technicalQuestions?.length > 0 ? (
+          <ul className="space-y-3">
+            {currentReport.technicalQuestions.map(
+              (question: string, index: number) => (
+                <li
+                  key={index}
+                  className="p-4 bg-white border rounded-lg"
+                >
+                  <span className="font-semibold text-[#282072] mr-2">
+                    {index + 1}.
+                  </span>
+
+                  {question}
+                </li>
+              )
+            )}
+          </ul>
+        ) : (
+          <p className="text-gray-500">
+            No technical questions generated.
+          </p>
+        )}
       </Card>
 
-      {/* 🔷 Behavioral Questions */}
+      {/* ================= BEHAVIORAL QUESTIONS ================= */}
+
       <Card className="p-8 shadow-md rounded-2xl">
         <h3 className="text-xl font-semibold text-[#282072] mb-6">
           Behavioral Questions
         </h3>
-        <ul className="space-y-3">
-          {report.behavioralQuestions?.map((q: string, i: number) => (
-            <li key={i} className="p-4 bg-white border rounded-lg">
-              {q}
-            </li>
-          ))}
-        </ul>
+
+        {currentReport.behavioralQuestions?.length > 0 ? (
+          <ul className="space-y-3">
+            {currentReport.behavioralQuestions.map(
+              (question: string, index: number) => (
+                <li
+                  key={index}
+                  className="p-4 bg-white border rounded-lg"
+                >
+                  <span className="font-semibold text-[#282072] mr-2">
+                    {index + 1}.
+                  </span>
+
+                  {question}
+                </li>
+              )
+            )}
+          </ul>
+        ) : (
+          <p className="text-gray-500">
+            No behavioral questions generated.
+          </p>
+        )}
       </Card>
 
-      {/* 🔷 Skill Gaps */}
+      {/* ================= SKILL GAPS ================= */}
+
       <Card className="p-8 shadow-md rounded-2xl">
         <h3 className="text-xl font-semibold text-[#282072] mb-6">
           Skill Gaps
         </h3>
-        <ul className="space-y-3">
-          {report.skillGaps?.map((s: string, i: number) => (
-            <li
-              key={i}
-              className="p-4 bg-[#fff1f2] border border-[#F32A46] text-[#F32A46] rounded-lg font-medium"
-            >
-              {s}
-            </li>
-          ))}
-        </ul>
+
+        {currentReport.skillGaps?.length > 0 ? (
+          <ul className="space-y-3">
+            {currentReport.skillGaps.map(
+              (skill: string, index: number) => (
+                <li
+                  key={index}
+                  className="p-4 bg-[#fff1f2] border border-[#F32A46] text-[#F32A46] rounded-lg font-medium"
+                >
+                  {skill}
+                </li>
+              )
+            )}
+          </ul>
+        ) : (
+          <p className="text-gray-500">
+            No skill gaps identified.
+          </p>
+        )}
       </Card>
 
-      {/* 🔷 Roadmap */}
+      {/* ================= PREPARATION ROADMAP ================= */}
+
       <Card className="p-8 shadow-md rounded-2xl">
         <h3 className="text-xl font-semibold text-[#282072] mb-6">
           Preparation Roadmap
         </h3>
-        <ul className="space-y-3">
-          {report.roadmap?.map((r: string, i: number) => (
-            <li
-              key={i}
-              className="p-4 bg-[#ecfeff] border border-[#03B3C5] rounded-lg"
-            >
-              {r}
-            </li>
-          ))}
-        </ul>
+
+        {currentReport.roadmap?.length > 0 ? (
+          <ul className="space-y-3">
+            {currentReport.roadmap.map(
+              (step: string, index: number) => (
+                <li
+                  key={index}
+                  className="p-4 bg-[#ecfeff] border border-[#03B3C5] rounded-lg"
+                >
+                  <span className="font-semibold text-[#282072] mr-2">
+                    Step {index + 1}:
+                  </span>
+
+                  {step}
+                </li>
+              )
+            )}
+          </ul>
+        ) : (
+          <p className="text-gray-500">
+            No preparation roadmap generated.
+          </p>
+        )}
       </Card>
+
     </div>
   );
 }
