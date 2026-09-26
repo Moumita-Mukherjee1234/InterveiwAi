@@ -10,7 +10,7 @@ const app = express();
 // ✅ Correct CORS for frontend (5173) + cookies
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://interveiwai-frontend.onrender.com",
     credentials: true,
   })
 );
