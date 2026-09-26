@@ -7,10 +7,20 @@ import interviewRoutes from "../routes/interview.routes.js";
 
 const app = express();
 
-// ✅ Correct CORS for frontend (5173) + cookies
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://interveiwai-frontend.onrender.com",
+];
+
 app.use(
   cors({
-    origin: "https://interveiwai-frontend.onrender.com",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -18,11 +28,9 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
 
-// Health check
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
 });
